@@ -19,7 +19,7 @@ class QuoteFixture extends Fixture {
 
     public function load(ObjectManager $manager) {
 
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 20; $i++) {
             $manager->persist($this->getQuote());
         }
         $manager->flush();
@@ -27,10 +27,10 @@ class QuoteFixture extends Fixture {
     private function getQuote() {
 
         return new Quote(
-            $this->faker->sentence(10),
+            $this->faker->sentence(10), //генерує речення мінімум з 10 слів (з рівно 10 слів?) ((ні то, ні то, я хз))
             $this->faker->name(),
             $this->faker->year(),
-            $this->faker->address(),
+            $this->faker->address(),  //генерує адресу
         );
     }
 }

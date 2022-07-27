@@ -22,34 +22,34 @@ class QuoteController extends AbstractController
 
     {
 
-        $defaultContext = [
-            AbstractNormalizer::GROUPS             => ['user'],
-            AbstractNormalizer::IGNORED_ATTRIBUTES => [
+        $defaultContext = [  //дефолтні параметри нормалайзера
+            AbstractNormalizer::GROUPS             => ['user'], //виводити з анотацією групи 'user'
+            AbstractNormalizer::IGNORED_ATTRIBUTES => [   //ігнорувати дані атрибути
                 '__initializer', 'isInitialized',
                 'cloner'
             ]
         ];
-        $encoders = [new JsonEncoder()];
-        $normalizer = new ObjectNormalizer(
+        $encoders = [new JsonEncoder()];   //енкодер: "Я родився"
+        $normalizer = new ObjectNormalizer(   //створення нормалайзера з дефолтрими настройками
             null, null, null,
             null, null, null,
             $defaultContext
         );
-        $normalizers = [$normalizer];
-        $this->serializer = new Serializer($normalizers, $encoders);
+        $normalizers = [$normalizer];   //це хз для чого
+        $this->serializer = new Serializer($normalizers, $encoders);  //створення серіалайзера (він некоректно працює)
     }
 
-    #[Route('/', name: 'index')]
+    #[Route('/', name: 'index')]   //при запуску сервера з таким роутом виконати наступну функцію
     public function index(
-        QuoteRepository $quoteRepository,
-        DeathNoteRepository $noteRepository
+        QuoteRepository $quoteRepository,   //таблиця з цитатами
+        DeathNoteRepository $noteRepository     //таблиця з авторами
     ): Response
     {
 
-        return $this->render(
+        return $this->render(   //відобразити в браузері сторінку з параметрами 'quotes' i 'persons'
             'index.html.twig',
             [
-                'quotes'  => $quoteRepository->findAll(),
+                'quotes'  => $quoteRepository->findAll(),   //findAll повертає масив з усіх обєктів в в таблиці
                 'persons' => $noteRepository->findAll(),
             ]
         );
@@ -57,23 +57,21 @@ class QuoteController extends AbstractController
 
     #[Route('/api/quote/', name: 'index1')]
     public function index1(
-        SerializerInterface $serializer,
+        SerializerInterface $serializer,   //серіалайзер (нормальний)
         QuoteRepository $quoteRepository,
         DeathNoteRepository $noteRepository
     ): Response
     {
-        $response = $serializer->serialize($noteRepository->findAll(), JsonEncoder::FORMAT, [
-            AbstractNormalizer::GROUPS => ['quotes']
-        ]);
+        $this->association($quoteRepository->findAll(), $noteRepository->findAll());    //функція наводиць звязки між таблицями
+        $response = $serializer->serialize($noteRepository->findAll(), JsonEncoder::FORMAT, [   //змінна, яка
+            AbstractNormalizer::GROUPS => ['authors']   //містить серіалізовані обєкти з таблиці авторів з властивостями
+        ]);                             //які позначені групою 'authors'  (тобто робить json)
 
-        /*$quoteRepository->findAll() */
-
-        return new Response($response, Response::HTTP_OK, ['Content-type' => 'application/json']);
+        return new Response(   //виводить json на сторінку
+            $response, Response::HTTP_OK, ['Content-type' => 'application/json']
+        );
     }
 
-    function Year($b){
-        return $b->getYear();
-    }
     #[Route('/api/quote1/', name: 'index2')]
     public function index2(
         SerializerInterface $serializer,
@@ -81,6 +79,8 @@ class QuoteController extends AbstractController
         DeathNoteRepository $noteRepository
     ): Response
     {
+        //var_dump(count($noteRepository->findAll()));  //більше не працює, бо в обєктах таблиць безкінечні рекурсивні посилання, які ламають браузер
+        $this->association($quoteRepository->findAll(), $noteRepository->findAll());
 
         $response1 = $serializer->serialize($quoteRepository->findAll(), JsonEncoder::FORMAT, [
             AbstractNormalizer::GROUPS => ['quotes']
@@ -93,5 +93,13 @@ class QuoteController extends AbstractController
             $response1, Response::HTTP_OK
         );
     }
-
+    public function association(array $table1, array $table2)
+    {
+        $counter = 0;
+        foreach ($table1 as $quoteObj)
+        {
+            $table2[$counter % count($table2)]->addQuote($quoteObj);
+            $counter ++;
+        }
+    }
 }

@@ -1,61 +1,62 @@
 <?php
 
-namespace App\Entity;
+namespace App\Entity;  //шлях по якому можна получити доступ до файлу
 
-use App\Repository\QuoteRepository;
-use Doctrine\Common\Collections\Collection;
+use App\Repository\QuoteRepository;     //підключення зовнішніх файлів/класів/функцій
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 
-#[ORM\Entity(repositoryClass: QuoteRepository::class)]
+#[ORM\Entity(repositoryClass: QuoteRepository::class)]  //ормна анотація, позначає клас як сутність і відмічає
+                                                        //хто буде управляти цією сутністю (QuoteRepository)
 class Quote
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column()]
-    public ?int $id = null;
+    #[ORM\Id]       // назва колонки в таблиці
+    #[ORM\GeneratedValue]   // значення автоматично генерується
+    #[ORM\Column()]     //особливості даної колонки
+    public ?int $id = null;   //ініціалізація властивості класу типу інт
 
-    #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['quotes'])]
+    #[ORM\Column(type: Types::TEXT)]    //колонка типу текст
+    #[Groups(['quotes', 'authors'])]   //колонка відноситься до груп 'quotes' і 'author' (пригодиться при виводі)
     public ?string $quote = null;
 
-    #[ORM\Column(length: 25)]
+    #[ORM\Column(type: Types::TEXT)]
     public ?string $historian = null;
 
-    #[Groups(['quotes'])]
-    #[ORM\Column(length: 5)]
-    public ?string $year = null;
+    #[ORM\Column(length: 5)]    //колонка розміром до 5 елементів (включно)
+    #[Groups(['quotes', 'authors'])]
+    public ?int $year = null;
 
-    #[Groups(['quotes'])]
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['quotes'])]
     public ?string $address = null;
 
     #[ORM\ManyToOne(inversedBy: 'quotes', cascade:['persist'])]
     #[ORM\JoinColumn(nullable: true)]
-    #[Groups(['quotes'])]
     public ?Author $author = null;
 
+    #[ORM\ManyToOne(inversedBy: 'quotes', cascade:['persist'])]     //асоціативна колонка, містить в собі посилання на
+    #[Groups(['quotes'])]                                           //обєкт іншої таблиці
+    public ?DeathNote $quoteAuthor = null; //властивіть типу class, приймає обєкти класу DeathNote
 
 
-    public function __construct($quote, $historian, $year, $address) {
-        $this->quote = $quote;
+
+    public function __construct(   //магічна функція конструктор, викликається при створенні нового обєкту,
+                                string $quote,    // в даному випадку приймає 4 параметра
+                                string $historian,    //від генератора (QuoteFixture)
+                                int $year, string $address
+    )
+    {
+        $this->quote = $quote;  //присвоєння властивості quote обєкту який створюється(this) значення параметра quote
         $this->historian = $historian;
         $this->year = $year;
         $this->address = $address;
-        $author = new Author();
-        $author->setName($historian);
-        $author->addQuote($this);
-
-
-
-
     }
 
 
 
-    public function getId(): ?int
+    public function getId(): ?int  //функція геттер, повертає інтову властивіть id обєкту від якого викликається
     {
         return $this->id;
     }
@@ -65,8 +66,8 @@ class Quote
         return $this->quote;
     }
 
-    public function setQuote(string $quote): self
-    {
+    public function setQuote(string $quote): self //функція сеттер, встановлює значення параметра властивості quote
+    {       //обєкта від якого викликається. Повертає цей же обєкт
         $this->quote = $quote;
 
         return $this;
@@ -84,12 +85,12 @@ class Quote
         return $this;
     }
 
-    public function getYear(): ?string
+    public function getYear(): ?int
     {
         return $this->year;
     }
 
-    public function setYear(string $year): self
+    public function setYear(int $year): self
     {
         $this->year = $year;
 
@@ -117,6 +118,18 @@ class Quote
     public function setAuthor(?Author $author): self
     {
         $this->author = $author;
+
+        return $this;
+    }
+
+    public function getQuoteAuthor(): ?DeathNote
+    {
+        return $this->quoteAuthor;
+    }
+
+    public function setQuoteAuthor(?DeathNote $quoteAuthor): self
+    {
+        $this->quoteAuthor = $quoteAuthor;
 
         return $this;
     }

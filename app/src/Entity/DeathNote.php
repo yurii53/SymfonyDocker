@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\DeathNoteRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -16,30 +18,65 @@ class DeathNote
     public ?int $id = null;
 
     #[ORM\Column(type: Types::TEXT)]
-    #[Groups(['quotes'])]
+    #[Groups(['quotes', 'authors'])]
     public ?string $name = null;
 
     #[ORM\Column(length: 5)]
-    #[Groups(['quotes'])]
+    #[Groups(['quotes', 'authors'])]
     public ?int $bornYear = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['authors'])]
     public ?string $cityOfBorn = null;
 
     #[ORM\Column(length: 5)]
+    #[Groups(['authors'])]
     public ?int $deadYear = null;
 
     #[ORM\Column(type: Types::TEXT)]
     public ?string $cityOfDead = null;
 
     #[ORM\Column(length: 5)]
+    #[Groups(['authors'])]
     public ?int $age = null;
 
     #[ORM\Column(length: 5)]
+    #[Groups(['authors'])]
     public ?int $deadNYearsAgo = null;
 
     #[ORM\Column(length: 5)]
     public ?int $now = null;
+
+    #[ORM\OneToMany(mappedBy: 'quoteAuthor', targetEntity: Quote::class)]
+    #[Groups(['authors'])]
+    public Collection $quotes;  //змінна типу колекція, шось типу масива но крутіше
+
+    public function __construct(
+                                string $Name,
+                                int $born_year,
+                                string $city_of_born,
+                                int $dead_year,
+                                string $city_of_dead
+    )
+    {
+        $this->name         = $Name;
+        $this->cityOfBorn = $city_of_born;
+        $this->cityOfDead = $city_of_dead;
+        $this->bornYear    = $born_year;
+        if ($born_year > $dead_year){  //якщо при генерації час смерті наступив до народження, то приймаємо що чєл
+            $this->age       = 0;      // помер при народженні
+            $this->deadYear = $born_year;
+        }
+        else{
+            $this->deadYear = $dead_year;
+            $this->age       = $dead_year - $born_year;
+        }
+        $this->now = date('Y');  //властивість принімає час серверу у форматі 'Y', тобто тільки рік
+        $this->deadNYearsAgo = $this->now - $this->deadYear;
+        $this->quotes = new ArrayCollection();
+    }
+
+
     public function getId(): ?int
     {
         return $this->id;
@@ -136,21 +173,33 @@ class DeathNote
     }
 
 
+    /**
+     * @return Collection<int, Quote>
+     */
+    public function getQuotes(): Collection
+    {
+        return $this->quotes;
+    }
 
-    public function __construct(string $Name, int $born_year, string $city_of_born, int $dead_year, string $city_of_dead) {
-        $this->name         = $Name;
-        $this->cityOfBorn = $city_of_born;
-        $this->cityOfDead = $city_of_dead;
-        $this->bornYear    = $born_year;
-        if ($born_year > $dead_year){
-            $this->age       = 0;
-            $this->deadYear = $born_year;
+    public function addQuote(Quote $quote): self//функція додавання посилань на цитати, які відносяться до даного автора
+    {                                           //крім випадків коли вона вже є в колекції
+        if (!$this->quotes->contains($quote)) {
+            $this->quotes->add($quote);
+            $quote->setQuoteAuthor($this);
         }
-        else{
-            $this->deadYear = $dead_year;
-            $this->age       = $dead_year - $born_year;
+
+        return $this;
+    }
+
+    public function removeQuote(Quote $quote): self //видалення елементу з колекції і видалення посилання на цей обєкт
+    {                           //в обєкті цитати
+        if ($this->quotes->removeElement($quote)) {
+            // set the owning side to null (unless already changed)
+            if ($quote->getQuoteAuthor() === $this) {
+                $quote->setQuoteAuthor(null);
+            }
         }
-        $this->now = date('Y');
-        $this->deadNYearsAgo = $this->now - $this->deadYear;
+
+        return $this;
     }
 }
