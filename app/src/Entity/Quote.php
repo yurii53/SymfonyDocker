@@ -32,10 +32,6 @@ class Quote
     #[Groups(['quotes'])]
     public ?string $address = null;
 
-    #[ORM\ManyToOne(inversedBy: 'quotes', cascade:['persist'])]
-    #[ORM\JoinColumn(nullable: true)]
-    public ?Author $author = null;
-
     #[ORM\ManyToOne(inversedBy: 'quotes', cascade:['persist'])]     //асоціативна колонка, містить в собі посилання на
     #[Groups(['quotes'])]                                           //обєкт іншої таблиці
     public ?DeathNote $quoteAuthor = null; //властивіть типу class, приймає обєкти класу DeathNote
@@ -106,18 +102,6 @@ class Quote
     public function setAddress(string $address): self
     {
         $this->address = $address;
-
-        return $this;
-    }
-
-    public function getAuthor(): ?Author
-    {
-        return $this->author;
-    }
-
-    public function setAuthor(?Author $author): self
-    {
-        $this->author = $author;
 
         return $this;
     }

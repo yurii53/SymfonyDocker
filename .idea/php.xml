@@ -73,6 +73,16 @@
       <path value="$PROJECT_DIR$/app/vendor/symfony/property-info" />
       <path value="$PROJECT_DIR$/app/vendor/symfony/property-access" />
       <path value="$PROJECT_DIR$/app/vendor/symfony/serializer" />
+      <path value="$PROJECT_DIR$/app/vendor/lexik/jwt-authentication-bundle" />
+      <path value="$PROJECT_DIR$/app/vendor/namshi/jose" />
+      <path value="$PROJECT_DIR$/app/vendor/stella-maris/clock" />
+      <path value="$PROJECT_DIR$/app/vendor/lcobucci/clock" />
+      <path value="$PROJECT_DIR$/app/vendor/lcobucci/jwt" />
+      <path value="$PROJECT_DIR$/app/vendor/symfony/security-http" />
+      <path value="$PROJECT_DIR$/app/vendor/symfony/security-core" />
+      <path value="$PROJECT_DIR$/app/vendor/symfony/security-csrf" />
+      <path value="$PROJECT_DIR$/app/vendor/symfony/password-hasher" />
+      <path value="$PROJECT_DIR$/app/vendor/symfony/security-bundle" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.0" />
