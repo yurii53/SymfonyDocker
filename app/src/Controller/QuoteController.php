@@ -47,7 +47,7 @@ class QuoteController extends AbstractController
     {
 
         return $this->render(   //відобразити в браузері сторінку з параметрами 'quotes' i 'persons'
-            'index.html.twig',
+            'safas.php',
             [
                 'quotes'  => $quoteRepository->findAll(),   //findAll повертає масив з усіх обєктів в в таблиці
                 'persons' => $noteRepository->findAll(),
@@ -102,4 +102,6 @@ class QuoteController extends AbstractController
             $counter ++;
         }
     }
+
+
 }
