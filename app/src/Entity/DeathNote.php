@@ -2,16 +2,20 @@
 
 namespace App\Entity;
 
+use App\Entity\Traits\IdentifierTrait;
 use App\Repository\DeathNoteRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use JetBrains\PhpStorm\Pure;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: DeathNoteRepository::class)]
 class DeathNote
 {
+    use IdentifierTrait;
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column()]
@@ -51,18 +55,20 @@ class DeathNote
     #[Groups(['authors'])]
     public Collection $quotes;  //змінна типу колекція, шось типу масива но крутіше
 
+    #[Pure]
     public function __construct(
-                                string $Name,
-                                int $born_year,
-                                string $city_of_born,
-                                int $dead_year,
-                                string $city_of_dead
+        string $Name,
+        int $born_year,
+        string $city_of_born,
+        int $dead_year,
+        string $city_of_dead
     )
     {
         $this->name         = $Name;
         $this->cityOfBorn = $city_of_born;
         $this->cityOfDead = $city_of_dead;
         $this->bornYear    = $born_year;
+
         if ($born_year > $dead_year){  //якщо при генерації час смерті наступив до народження, то приймаємо що чєл
             $this->age       = 0;      // помер при народженні
             $this->deadYear = $born_year;
@@ -71,16 +77,12 @@ class DeathNote
             $this->deadYear = $dead_year;
             $this->age       = $dead_year - $born_year;
         }
+
         $this->now = date('Y');  //властивість принімає час серверу у форматі 'Y', тобто тільки рік
         $this->deadNYearsAgo = $this->now - $this->deadYear;
         $this->quotes = new ArrayCollection();
     }
 
-
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
 
     public function getName(): ?string
     {

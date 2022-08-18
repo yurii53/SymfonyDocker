@@ -6,12 +6,14 @@ use App\Repository\QuoteRepository;     //підключення зовнішн�
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-
+use App\Entity\Traits\IdentifierTrait;
 
 #[ORM\Entity(repositoryClass: QuoteRepository::class)]  //ормна анотація, позначає клас як сутність і відмічає
                                                         //хто буде управляти цією сутністю (QuoteRepository)
 class Quote
 {
+    use IdentifierTrait;
+
     #[ORM\Id]       // назва колонки в таблиці
     #[ORM\GeneratedValue]   // значення автоматично генерується
     #[ORM\Column()]     //особливості даної колонки
@@ -37,7 +39,6 @@ class Quote
     public ?DeathNote $quoteAuthor = null; //властивіть типу class, приймає обєкти класу DeathNote
 
 
-
     public function __construct(   //магічна функція конструктор, викликається при створенні нового обєкту,
                                 string $quote,    // в даному випадку приймає 4 параметра
                                 string $historian,    //від генератора (QuoteFixture)
@@ -48,13 +49,6 @@ class Quote
         $this->historian = $historian;
         $this->year = $year;
         $this->address = $address;
-    }
-
-
-
-    public function getId(): ?int  //функція геттер, повертає інтову властивіть id обєкту від якого викликається
-    {
-        return $this->id;
     }
 
     public function getQuote(): ?string

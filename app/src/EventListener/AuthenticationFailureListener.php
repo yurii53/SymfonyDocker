@@ -19,7 +19,7 @@ class AuthenticationFailureListener
         ];
 
         $response = new JWTAuthenticationFailureResponse('Bad credentials, please verify that your username/password are correctly set', JsonResponse::HTTP_UNAUTHORIZED);
-        $response->setData($data);
+        //$response->setData($data);
 
         $event->setResponse($response);
     }
