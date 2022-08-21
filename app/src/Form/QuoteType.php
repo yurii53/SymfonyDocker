@@ -13,7 +13,7 @@ class QuoteType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('quote')
+            //->add('quote')
             ->add('historian')
             ->add('year')
             ->add('address')
@@ -26,6 +26,7 @@ class QuoteType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Quote::class,
+            'csrf_protection' => false,
         ]);
     }
 }

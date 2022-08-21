@@ -42,7 +42,7 @@ class Quote
     public function __construct(   //магічна функція конструктор, викликається при створенні нового обєкту,
                                 string $quote = " ",    // в даному випадку приймає 4 параметра
                                 string $historian = " ",    //від генератора (QuoteFixture)
-                                int $year = 9999,
+                                int $year = 0,
                                 string $address = " "
     )
     {

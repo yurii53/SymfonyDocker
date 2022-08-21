@@ -116,19 +116,49 @@ class QuoteController extends AbstractController
         }
     }
 
-    #[Route('/api/newQuote/', name: 'new')]
+    #[Route('/api/newQuote/', name: 'new'
+        //, methods: "POST"
+    )]
     public function new(
         QuoteRepository $quoteRepository,
+        DeathNoteRepository $noteRepository,
         Request $request): Response
     {
+
+        if (isset($_POST)) {
+            $quote = new Quote(
+                $_POST["quote"],
+                $_POST["historian"],
+                $_POST["year"],
+                $_POST["address"],
+            );
+
+            $quote->setQuoteAuthor($noteRepository->find($_POST["quote_author"]));
+            $quoteRepository->add($quote, true);
+            $response = $this->serializer->serialize($quote, JsonEncoder::FORMAT, [
+                AbstractNormalizer::GROUPS => ['quotes']
+            ]);
+
+            return new Response(
+                $response, Response::HTTP_OK
+            );
+        }
+
         $quote = new Quote();
         $form = $this->createForm(QuoteType::class, $quote);
         $form->handleRequest($request);
-
+        var_dump($form->isSubmitted());
         if ($form->isSubmitted() && $form->isValid()) {
             $quote = $form->getData();
             $quoteRepository->add($quote, true);
-            return $this->redirectToRoute('index');
+
+            $response = $this->serializer->serialize($quote, JsonEncoder::FORMAT, [
+                AbstractNormalizer::GROUPS => ['quotes']
+            ]);
+
+            return new Response(
+                $response, Response::HTTP_OK
+            );
         }
 
         return $this->renderForm('quote/new.html.twig', [
@@ -140,15 +170,38 @@ class QuoteController extends AbstractController
     public function up(
         ManagerRegistry $doctrine,
         QuoteRepository $quoteRepository,
+        DeathNoteRepository $noteRepository,
         Request $request): Response
     {
+        if (isset($_POST)) {
+            $upquote = $quoteRepository->find($_POST["id"]);
+
+            $upquote->setQuote($_POST["quote"]);
+            $upquote->setHistorian($_POST["historian"]);
+            $upquote->setYear($_POST["year"]);
+            $upquote->setAddress($_POST["address"]);
+            $upquote->setQuoteAuthor($noteRepository->find($_POST["quote_author"]));
+
+            $entityManager = $doctrine->getManager();
+            $entityManager->persist($upquote);
+            $entityManager->flush();
+
+            $response = $this->serializer->serialize($upquote, JsonEncoder::FORMAT, [
+                AbstractNormalizer::GROUPS => ['quotes']
+            ]);
+
+            return new Response(
+                $response, Response::HTTP_OK
+            );
+        }
+
         $quote = new Quote();
         $form = $this->createForm(UpQuoteType::class, $quote);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $quote = $form->getData();
-            //$quoteRepository->add($quote, true);
+
             $upquote = $quoteRepository->find($quote->id);
 
             $upquote->setQuote($quote->quote);
@@ -161,9 +214,14 @@ class QuoteController extends AbstractController
             $entityManager->persist($upquote);
             $entityManager->flush();
 
+            $response = $this->serializer->serialize($upquote, JsonEncoder::FORMAT, [
+                AbstractNormalizer::GROUPS => ['quotes']
+            ]);
 
-            return $this->redirectToRoute('index');
-            //return new Response();
+            return new Response(
+                $response, Response::HTTP_OK
+            );
+
         }
 
         return $this->renderForm('quote/new.html.twig', [
