@@ -40,9 +40,10 @@ class Quote
 
 
     public function __construct(   //магічна функція конструктор, викликається при створенні нового обєкту,
-                                string $quote,    // в даному випадку приймає 4 параметра
-                                string $historian,    //від генератора (QuoteFixture)
-                                int $year, string $address
+                                string $quote = " ",    // в даному випадку приймає 4 параметра
+                                string $historian = " ",    //від генератора (QuoteFixture)
+                                int $year = 2000,
+                                string $address = " "
     )
     {
         $this->quote = $quote;  //присвоєння властивості quote обєкту який створюється(this) значення параметра quote
@@ -112,5 +113,8 @@ class Quote
         return $this;
     }
 
-   
+   public function __toString(): string
+   {
+       return $this->id;
+   }
 }

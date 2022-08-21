@@ -7,11 +7,7 @@
 <body>
 
 <?php
-if (1 == 1) {
-    echo "Привіт, світ!";
-} else {
-    echo "Добрий ранок, світ!";
-}
+echo password_hash('000000', PASSWORD_BCRYPT);
 ?>
 
 </body>

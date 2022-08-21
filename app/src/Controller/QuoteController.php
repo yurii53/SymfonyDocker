@@ -2,8 +2,11 @@
 
 namespace App\Controller;
 
+use App\Entity\Quote;
 use App\Repository\DeathNoteRepository;
 use App\Repository\QuoteRepository;
+use App\Form\QuoteType;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -86,5 +89,30 @@ class QuoteController extends AbstractController
         }
     }
 
+    #[Route('/api/newQuote/', name: 'new')]
+    public function new(
+        QuoteRepository $quoteRepository,
+        Request $request): Response
+    {
+        // creates a task object and initializes some data for this example
+        $quote = new Quote();
+
+
+        $form = $this->createForm(QuoteType::class, $quote);
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // $form->getData() holds the submitted values
+            // but, the original `$task` variable has also been updated
+            $quote = $form->getData();
+            $quoteRepository->add($quote, true);
+
+            return $this->redirectToRoute('index');
+        }
+
+        return $this->renderForm('quote/new.html.twig', [
+            'form' => $form,
+        ]);
+    }
 
 }
