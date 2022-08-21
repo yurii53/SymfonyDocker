@@ -6,6 +6,7 @@ use App\Entity\Quote;
 use App\Repository\DeathNoteRepository;
 use App\Repository\QuoteRepository;
 use App\Form\QuoteType;
+use App\Form\UpQuoteType;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,8 +14,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Encoder\JsonEncoder;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Serializer\SerializerInterface;
 
 class QuoteController extends AbstractController
@@ -122,20 +121,49 @@ class QuoteController extends AbstractController
         QuoteRepository $quoteRepository,
         Request $request): Response
     {
-        // creates a task object and initializes some data for this example
         $quote = new Quote();
-
-
         $form = $this->createForm(QuoteType::class, $quote);
-
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
-            // $form->getData() holds the submitted values
-            // but, the original `$task` variable has also been updated
             $quote = $form->getData();
             $quoteRepository->add($quote, true);
+            return $this->redirectToRoute('index');
+        }
+
+        return $this->renderForm('quote/new.html.twig', [
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/api/updateQuote/', name: 'update')]
+    public function up(
+        ManagerRegistry $doctrine,
+        QuoteRepository $quoteRepository,
+        Request $request): Response
+    {
+        $quote = new Quote();
+        $form = $this->createForm(UpQuoteType::class, $quote);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $quote = $form->getData();
+            //$quoteRepository->add($quote, true);
+            $upquote = $quoteRepository->find($quote->id);
+
+            $upquote->setQuote($quote->quote);
+            $upquote->setHistorian($quote->getHistorian());
+            $upquote->setYear($quote->getYear());
+            $upquote->setAddress($quote->getAddress());
+            $upquote->setQuoteAuthor($quote->getQuoteAuthor());
+
+            $entityManager = $doctrine->getManager();
+            $entityManager->persist($upquote);
+            $entityManager->flush();
+
 
             return $this->redirectToRoute('index');
+            //return new Response();
         }
 
         return $this->renderForm('quote/new.html.twig', [
