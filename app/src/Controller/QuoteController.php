@@ -6,6 +6,7 @@ use App\Entity\Quote;
 use App\Repository\DeathNoteRepository;
 use App\Repository\QuoteRepository;
 use App\Form\QuoteType;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
@@ -44,11 +45,23 @@ class QuoteController extends AbstractController
 
     #[Route('/api/quote/', name: 'index1')]
     public function index1(
+        ManagerRegistry $doctrine,
         QuoteRepository $quoteRepository,
         DeathNoteRepository $noteRepository
     ): Response
     {
         $this->association($quoteRepository->findAll(), $noteRepository->findAll());    //функція наводиць звязки між таблицями
+        $entityManager = $doctrine->getManager();
+        foreach ($quoteRepository->findAll() as $quote)
+        {
+            $entityManager->persist($quote);
+        }
+        foreach ($noteRepository->findAll() as $note)
+        {
+            $entityManager->persist($note);
+        }
+        $entityManager->flush();
+
         $response = $this->serializer->serialize(
             $noteRepository->findAll(),
             JsonEncoder::FORMAT,
@@ -64,12 +77,24 @@ class QuoteController extends AbstractController
 
     #[Route('/api/quote1/', name: 'index2')]
     public function index2(
+        ManagerRegistry $doctrine,
         QuoteRepository $quoteRepository,
         DeathNoteRepository $noteRepository
     ): Response
     {
         //var_dump(count($noteRepository->findAll()));  //більше не працює, бо в обєктах таблиць безкінечні рекурсивні посилання, які ламають браузер
         $this->association($quoteRepository->findAll(), $noteRepository->findAll());
+
+        $entityManager = $doctrine->getManager();
+        foreach ($quoteRepository->findAll() as $quote)
+        {
+            $entityManager->persist($quote);
+        }
+        foreach ($noteRepository->findAll() as $note)
+        {
+            $entityManager->persist($note);
+        }
+        $entityManager->flush();
 
         $response1 = $this->serializer->serialize($quoteRepository->findAll(), JsonEncoder::FORMAT, [
             AbstractNormalizer::GROUPS => ['quotes']
@@ -79,6 +104,9 @@ class QuoteController extends AbstractController
             $response1, Response::HTTP_OK
         );
     }
+
+
+
     public function association(array $table1, array $table2)
     {
         $counter = 0;
